@@ -8,9 +8,8 @@ This deployment:
 * Uses [DockerSpawner](https://github.com/jupyter/dockerspawner) to spawn single-user Jupyter Notebook servers in separate Docker containers on the same host
 * Persists JupyterHub data in a Docker volume on the host
 * Persists user notebook directories in Docker volumes on the host
-* Uses [OAuthenticator](https://github.com/jupyter/oauthenticator) and [GitHub OAuth](https://developer.github.com/v3/oauth/) to authenticate users
-
-![JupyterHub single host Docker deployment](internal/jupyterhub-docker.png)
+* Uses ~~[OAuthenticator](https://github.com/jupyter/oauthenticator) and [GitHub OAuth](https://developer.github.com/v3/oauth/)~~ [ldapauthenticator](https://github.com/jupyterhub/ldapauthenticator) to authenticate users
+* Notebook image with Oracle 11g driver installed (cx_oracle).
 
 ## Use Cases
 
@@ -28,12 +27,12 @@ This deployment is **NOT** intended for a production environment.
 * This deployment uses Docker for all the things, via  [Docker Compose](https://docs.docker.com/compose/overview/).
   It requires [Docker Engine](https://docs.docker.com/engine) 1.12.0 or higher.
   See the [installation instructions](https://docs.docker.com/engine/installation/) for your environment.
-* This example configures JupyterHub for HTTPS connections (the default).
+* ~~This example configures JupyterHub for HTTPS connections (the default).
    As such, you must provide TLS certificate chain and key files to the JupyterHub server.
    If you do not have your own certificate chain and key, you can either
    [create self-signed versions](https://jupyter-notebook.readthedocs.org/en/latest/public_server.html#using-ssl-for-encrypted-communication),
    or obtain real ones from [Let's Encrypt](https://letsencrypt.org)
-   (see the [letsencrypt example](examples/letsencrypt/README.md) for instructions).
+   (see the [letsencrypt example](examples/letsencrypt/README.md) for instructions).~~
 
 From here on, we'll assume you are set up with docker,
 via a local installation or [docker-machine](./docs/docker-machine.md).
@@ -44,44 +43,26 @@ At this point,
 should work.
 
 
-## Setup GitHub Authentication
+## Setup LDAP Authentication
 
-This deployment uses GitHub OAuth to authenticate users.
-It requires that you create a [GitHub application](https://github.com/settings/applications/new).
-You will need to specify an OAuth callback URL in the following form:
+This deployment uses ldapauthenticator to authenticate users.
 
+You must set the following environment variables in `.env` file or `jupyterhub_config.py`:
 ```
-https://<myhost.mydomain>/hub/oauth_callback
+LDAP_SERVER_ADDRESS = ip_address
+BIND_DN_TEMPLATE = 'domain\{username}'
+USER_SEARCH_BASE = 'dc=example,dc=com'
 ```
+where `{username}` must stay like this, so it can be used by the authenticator.
 
-You must pass the secrets that GitHub provides for your application to JupyterHub at runtime.
-You can do this by setting the `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`,
-and `OAUTH_CALLBACK_URL` environment variables when you run the JupyterHub container,
-or you can add them to the `.env` file in the root directory of this repository.  For example,
-
-```
-GITHUB_CLIENT_ID=<github_client_id>
-GITHUB_CLIENT_SECRET=<github_client_secret>
-OAUTH_CALLBACK_URL=https://<myhost.mydomain>/hub/oauth_callback
-```
-
-**Note:** The `.env` file is a special file that Docker Compose uses to lookup environment variables.
-If you choose to place the GitHub secrets in this file,
-you should ensure that this file remains private
-(e.g., do not commit the secrets to source control).
+**Note:** The `.env` file is a special file that Docker Compose uses to lookup environment variables..
 
 ## Build the JupyterHub Docker image
 
 Configure JupyterHub and build it into a Docker image.
 
-1. Copy the TLS certificate chain and key files for the JupyterHub server to a directory named `secrets` within this repository directory. These will be added to the JupyterHub Docker image at build time.  If you do not have a certificate chain and key, you can either [create self-signed versions](https://jupyter-notebook.readthedocs.org/en/latest/public_server.html#using-ssl-for-encrypted-communication), or obtain real ones from [Let's Encrypt](https://letsencrypt.org) (see the [letsencrypt example](examples/letsencrypt/README.md) for instructions).
 
-    ```
-    mkdir -p secrets
-    cp jupyterhub.crt jupyterhub.key secrets/
-    ```
-
-1. Create a `userlist` file with a list of authorized users.  At a minimum, this file should contain a single admin user.  The username should be a GitHub username.  For example:
+1. Create a `userlist` file with a list of authorized users.  At a minimum, this file should contain a single admin user.  The username should be a LDAP username.  For example:
 
    ```
    jtyberg admin
