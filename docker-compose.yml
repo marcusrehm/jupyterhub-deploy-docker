@@ -18,7 +18,7 @@ services:
       # Bind Docker volume on host for JupyterHub database and cookie secrets
       - "data:${DATA_VOLUME_CONTAINER}"
     ports:
-      - "443:443"
+      - "8000:8000"
     environment:
       # All containers will join this network
       DOCKER_NETWORK_NAME: ${DOCKER_NETWORK_NAME}
@@ -28,12 +28,13 @@ services:
       DOCKER_NOTEBOOK_DIR: ${DOCKER_NOTEBOOK_DIR}
       # Using this run command (optional)
       DOCKER_SPAWN_CMD: ${DOCKER_SPAWN_CMD}
-      # Required to authenticate users using GitHub OAuth
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
-      OAUTH_CALLBACK_URL: ${OAUTH_CALLBACK_URL}
     command: >
       jupyterhub -f /srv/jupyterhub/jupyterhub_config.py
+  notebook:
+    build:
+      context: .
+      dockerfile: Dockerfile.notebook_image
+    image: ${DOCKER_NOTEBOOK_IMAGE}
 
 volumes:
   data:

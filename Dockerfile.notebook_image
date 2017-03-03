@@ -1,0 +1,13 @@
+FROM jupyter/scipy-notebook:18e5563b7486
+
+USER root
+
+RUN apt-get update
+
+RUN apt-get install libaio-dev -y \
+  libaio1 \
+  libaio-dev
+
+#RUN conda install cx_oracle
+
+RUN conda install -n python2 cx_oracle
