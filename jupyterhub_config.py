@@ -32,10 +32,12 @@ c.DockerSpawner.extra_host_config = { 'network_mode': network_name }
 # user `jovyan`, and set the notebook directory to `/home/jovyan/work`.
 # We follow the same convention.
 notebook_dir = os.environ.get('DOCKER_NOTEBOOK_DIR') #or '/home/jovyan/work'
+notebook_dir_shared = os.environ.get('DOCKER_NOTEBOOK_DIR_SHARED') #or '/home/jovyan/work'
 c.DockerSpawner.notebook_dir = notebook_dir
 # Mount the real user's Docker volume on the host to the notebook user's
 # notebook directory in the container
-c.DockerSpawner.volumes = { 'jupyterhub-user-{username}': notebook_dir }
+c.DockerSpawner.volumes = { 'jupyterhub-user-{username}': notebook_dir,
+                            'jupyterhub-shared': notebook_dir_shared}
 c.DockerSpawner.extra_create_kwargs.update({ 'volume_driver': 'local' })
 # Remove containers once they are stopped
 c.DockerSpawner.remove_containers = True
@@ -50,11 +52,11 @@ c.JupyterHub.port = 8000
 
 # Authenticate users with GitHub OAuth
 c.JupyterHub.authenticator_class = 'ldapauthenticator.LDAPAuthenticator'
-c.LDAPAuthenticator.server_address = os.environ['LDAP_SERVER_ADDRESS']
-c.LDAPAuthenticator.bind_dn_template = os.environ['BIND_DN_TEMPLATE']
+c.LDAPAuthenticator.server_address = os.environ.get('LDAP_SERVER_ADDRESS')
+c.LDAPAuthenticator.bind_dn_template = os.environ.get('BIND_DN_TEMPLATE')
 c.LDAPAuthenticator.use_ssl = False
 c.LDAPAuthenticator.lookup_dn = True
-c.LDAPAuthenticator.user_search_base = os.environ['USER_SEARCH_BASE']
+c.LDAPAuthenticator.user_search_base = os.environ.get('USER_SEARCH_BASE')
 c.LDAPAuthenticator.user_attribute = 'sAMAccountName'
 
 # Persist hub data on volume mounted inside container

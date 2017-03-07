@@ -26,8 +26,14 @@ services:
       DOCKER_NOTEBOOK_IMAGE: ${DOCKER_NOTEBOOK_IMAGE}
       # Notebook directory inside user image
       DOCKER_NOTEBOOK_DIR: ${DOCKER_NOTEBOOK_DIR}
+      # Notebook directory inside user image for shared notebooks
+      DOCKER_NOTEBOOK_DIR_SHARED: ${DOCKER_NOTEBOOK_DIR_SHARED}
       # Using this run command (optional)
       DOCKER_SPAWN_CMD: ${DOCKER_SPAWN_CMD}
+      # Environment variables for LDAP config
+      LDAP_SERVER_ADDRESS: ${LDAP_SERVER_ADDRESS}
+      BIND_DN_TEMPLATE: ${BIND_DN_TEMPLATE}
+      USER_SEARCH_BASE: ${USER_SEARCH_BASE}
     command: >
       jupyterhub -f /srv/jupyterhub/jupyterhub_config.py
   notebook:
