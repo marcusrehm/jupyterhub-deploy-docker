@@ -1,13 +1,47 @@
-FROM jupyter/tensorflow-notebook:72cca2a7f3ea
+FROM jupyter/scipy-notebook:18e5563b7486
 
 USER root
 
 RUN apt-get update
 
+#INSTALL ORACLE INSTANT CLIENT
 RUN apt-get install libaio-dev -y \
   libaio1 \
-  libaio-dev
+  libaio-dev \
+  build-essential \
+  unzip \
+  curl
 
-#RUN conda install cx_oracle
+#ADD ORACLE INSTANT CLIENT
+RUN mkdir -p opt/oracle
+#ADD ./oracle/linux/ .
+
+COPY instantclient-basic-linux.x64-11.2.0.4.0.zip /tmp
+COPY instantclient-sdk-linux.x64-11.2.0.4.0.zip /tmp
+
+RUN unzip /tmp/instantclient-basic-linux.x64-11.2.0.4.0.zip -d /opt/oracle
+RUN unzip /tmp/instantclient-sdk-linux.x64-11.2.0.4.0.zip -d /opt/oracle
+RUN mv /opt/oracle/instantclient_11_2 /opt/oracle/instantclient
+
+RUN ln -s /opt/oracle/instantclient/libclntsh.so.11.1 /opt/oracle/instantclient/libclntsh.so
+RUN ln -s /opt/oracle/instantclient/libocci.so.11.1 /opt/oracle/instantclient/libocci.so
+
+ENV ORACLE_HOME="/opt/oracle/instantclient"
+ENV OCI_HOME="/opt/oracle/instantclient"
+ENV OCI_LIB_DIR="/opt/oracle/instantclient"
+ENV OCI_INCLUDE_DIR="/opt/oracle/instantclient/sdk/include"
+ENV LD_LIBRARY_PATH="/opt/oracle/instantclient:$ORACLE_HOME"
+
+RUN echo '/opt/oracle/instantclient/' | tee -a /etc/ld.so.conf.d/oracle_instant_client.conf && ldconfig
+
+RUN pip install --upgrade pip
+
+RUN pip3 install cx_oracle
 
 RUN conda install -n python2 cx_oracle
+
+# INSTALL TENSOR FLOW
+RUN pip2 install --ignore-installed --upgrade \
+    https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.0.0-cp27-none-linux_x86_64.whl
+RUN pip install --ignore-installed --upgrade \
+    https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.0.0-cp35-cp35m-linux_x86_64.whl

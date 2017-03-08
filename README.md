@@ -9,7 +9,8 @@ This deployment:
 * Persists JupyterHub data in a Docker volume on the host
 * Persists user notebook directories in Docker volumes on the host
 * Uses ~~[OAuthenticator](https://github.com/jupyter/oauthenticator) and [GitHub OAuth](https://developer.github.com/v3/oauth/)~~ [ldapauthenticator](https://github.com/jupyterhub/ldapauthenticator) to authenticate users
-* Notebook image with Oracle 11g driver installed (cx_oracle).
+* Notebook image with Oracle 11g driver installed (cx_oracle) in both python2 and python3 environments.
+* Latest version of Tensorflow in both python2 and python3 environments.
 
 ## Use Cases
 
